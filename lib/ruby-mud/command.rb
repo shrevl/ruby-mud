@@ -1,34 +1,27 @@
+require_relative 'chat'
+
 module Command
   @commands = {
-                "say" => lambda {|args| Command.say args},
+                :say => Chat.method(:say),
               }
   
-  def Command.execute(cmd)
+  def Command.execute(actor, cmd)
     cmds = Command.parse(cmd)
     if cmds.nil?
       puts "'#{cmd}' is not a well formed command."
       return false
     end
-    c = cmds[0]
+    c = cmds[0].intern
     args = cmds[1..cmds.length]
     command = @commands[c]
     unless command.nil?
-      command[args]
+      command[actor, args]
     else
       puts "Command '#{c}' not found."
       false
     end
   end
-  
-  def Command.say(words)
-    text = words.join(" ").strip
-    if(text.empty?)
-      return false
-    end
-    puts "[Say] " + text
-    true
-  end
-  
+    
   private
   def Command.parse(cmd)
     in_quotes = false
