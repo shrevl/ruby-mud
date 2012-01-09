@@ -23,4 +23,6 @@ Gem::Specification.new do |s|
   # s.add_runtime_dependency "rest-client"
   s.add_development_dependency "rspec"
   s.add_development_dependency "autotest"
+  s.add_runtime_dependency "mongo"
+  s.add_runtime_dependency "bson_ext"
 end

@@ -1,4 +1,4 @@
 require "ruby-mud/version"
 
-module Mud
+module RubyMud
 end
