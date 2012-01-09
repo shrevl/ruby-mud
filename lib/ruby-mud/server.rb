@@ -1,13 +1,34 @@
 require 'socket'
+require 'net/telnet'
+
 require_relative 'command'
+require_relative 'telnet'
 require_relative 'world'
 require_relative 'feature/player'
 require_relative 'feature/room'
 
+def receive_input(client)
+  sanitize_input client.waitfor({"String" => "\n"})
+end
+
+def sanitize_input(input)
+  result = String.new
+  input.each_byte do |byte|
+    #backspace
+    if byte == 8
+      result = result[0..-2]
+    #remove characters outside of the "normal" 
+    elsif byte >= 32 and byte <= 127
+      result << byte
+    end
+  end
+  result
+end
+
 def prompt_for_player(client)
   begin
-    client.puts "Enter your name:"
-    name = client.recv 100
+    RubyMud::Telnet.send client, "Enter your name:"
+    name = receive_input client
     unless name.empty?
       name.chomp!
       player = RubyMud::World.instance.players[name]
@@ -22,7 +43,7 @@ def prompt_for_player(client)
         player.client = client
         return player
       else
-        client.puts "A player by that name is already active."
+        RubyMud::Telnet.send client, "A player by that name is already active."
       end
     else
       #reading nothing from the socket indicates that the other end of the socket is closed
@@ -41,14 +62,17 @@ server = TCPServer.open 2000
 acceptThread = Thread.start do
   loop do
     Thread.start(server.accept) do |client|
+      client = Net::Telnet.new("Proxy" => client)
       player = prompt_for_player client
       unless player.nil?
         RubyMud::World.instance.add_player player
         begin
-          m = client.recv 100
-          unless m.empty?
+          m = receive_input client
+          unless m.nil?
             m.chomp!
-            RubyMud::Command.execute player, m
+            unless m.empty?
+              RubyMud::Command.execute player, m
+            end
           else
             #reading nothing from the socket indicates the other side has closed it's connection
             #we can safely disconnect our side of the socket

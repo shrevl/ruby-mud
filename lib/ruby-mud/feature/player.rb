@@ -1,4 +1,5 @@
 require_relative 'actor'
+require_relative '../telnet'
 
 module RubyMud
   module Feature
@@ -11,13 +12,13 @@ module RubyMud
       end
       
       def puts(message)
-        unless @client.closed?
-          @client.puts message
+        unless @client.sock.closed?
+          RubyMud::Telnet.send @client, message
         end
       end
       
       def disconnect
-        unless @client.closed?
+        unless @client.sock.closed?
           @client.close
         end
       end
