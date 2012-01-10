@@ -8,7 +8,13 @@ require_relative 'feature/player'
 require_relative 'feature/room'
 
 def receive_input(client)
-  sanitize_input client.waitfor({"String" => "\n"})
+  begin
+    #return output once a newline has been sent
+    #timeout after 10 minutes without a message being sent
+    sanitize_input client.waitfor({"String" => "\n", "Timeout" => 6000})
+  rescue TimeoutError
+    nil
+  end
 end
 
 def sanitize_input(input)
@@ -17,8 +23,7 @@ def sanitize_input(input)
     #backspace
     if byte == 8
       result = result[0..-2]
-    #remove characters outside of the "normal" 
-    elsif byte >= 32 and byte <= 127
+    else
       result << byte
     end
   end
@@ -29,7 +34,7 @@ def prompt_for_player(client)
   begin
     RubyMud::Telnet.send client, "Enter your name:"
     name = receive_input client
-    unless name.empty?
+    unless name.nil?
       name.chomp!
       player = RubyMud::World.instance.players[name]
       if player.nil?
@@ -37,7 +42,7 @@ def prompt_for_player(client)
         RubyMud::Message.send_global "[#{player.name} has joined the game]"
         RubyMud::Message.send_to_room player.in_room, "#{player.name} has appeared."
         return player
-      elsif player.client.closed?
+      elsif player.client.sock.closed?
         RubyMud::Message.send_global "[#{player.name} has reconnected]"
         RubyMud::Message.send_to_room player.in_room, "The light has returned to #{player.name}'s eyes."
         player.client = client
@@ -48,9 +53,9 @@ def prompt_for_player(client)
     else
       #reading nothing from the socket indicates that the other end of the socket is closed
       #close our end of the socket
-      client.close
+      client.sock.close
     end
-  end while !client.closed?
+  end while !client.sock.closed?
   nil
 end
 
@@ -81,7 +86,7 @@ acceptThread = Thread.start do
             RubyMud::Message.send_to_room player.in_room, "#{player.name}'s eyes have lost their light."
             break
           end
-        end while !client.closed?
+        end while !client.sock.closed?
       end
     end
   end
