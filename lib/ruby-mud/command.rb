@@ -12,7 +12,7 @@ module RubyMud
     def Command.execute(actor, cmd)
       cmds = Command.parse(cmd)
       if cmds.nil?
-        Message.send_to_actor(actor, "'#{cmd}' is not a well formed command.")
+        Message.send_to_actor actor, "command.unparsable", cmd
         return false
       end
       c = cmds[0].downcase.intern
@@ -21,7 +21,7 @@ module RubyMud
       unless command.nil?
         command[actor, args]
       else
-        Message.send_to_actor(actor, "Command '#{c}' not found.")
+        Message.send_to_actor actor, "command.invalid", cmds[0]
         false
       end
     end

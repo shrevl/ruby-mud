@@ -8,7 +8,7 @@ module RubyMud
         if(text.empty?)
           return false
         end
-        RubyMud::Message.send_to_room actor.in_room, "[Say] #{actor.name}: " + text
+        RubyMud::Message.send_to_room actor.in_room, "chat.say", actor.name, text
         true
       end
     end  

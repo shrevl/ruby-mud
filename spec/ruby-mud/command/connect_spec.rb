@@ -22,7 +22,7 @@ describe RubyMud::Command::Connect do
       @out_room.messages.length.should equal 1
     end
     it "should disconnect the actor from the game" do
-      @actor.client.closed?.should == true
+      @actor.client.sock.closed?.should == true
     end
     it "should remove the actor from the room" do
       RubyMud::World.instance.rooms[@actor.in_room].players[@actor.name].nil?.should == true

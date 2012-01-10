@@ -1,0 +1,22 @@
+chat:
+  say: "[Say] {1}: {2}"
+ 
+command:
+  unparsable: "'{1}' is not a well formed command."
+  invalid: "Command '{1}' not found."
+
+player:
+  global:
+    disconnect: "[{1} has disconnected]"
+    join: "[{1} has joined the game]"
+    quit: "[{1} has left the game]"
+    reconnect: "[{1} has reconnected]"
+  room:
+    disconnect: "{1}'s eyes have lost their light."
+    join: "{1} has appeared."
+    quit: "{1} has disappeared."
+    reconnect: "The light has returned to {1}'s eyes."
+
+server:
+  name_prompt: "Enter your name:"
+  player_active: "A player by that name is already active."

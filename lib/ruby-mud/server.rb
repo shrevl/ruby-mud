@@ -1,3 +1,4 @@
+require 'logger'
 require 'socket'
 require 'net/telnet'
 
@@ -7,17 +8,23 @@ require_relative 'world'
 require_relative 'feature/player'
 require_relative 'feature/room'
 
+logger = Logger.new STDOUT
+logger.level = Logger::DEBUG
+
 def receive_input(client)
   begin
     #return output once a newline has been sent
     #timeout after 10 minutes without a message being sent
-    sanitize_input client.waitfor({"String" => "\n", "Timeout" => 6000})
+    sanitize_input client.waitfor({"String" => "\n", "Timeout" => 600})
   rescue TimeoutError
     nil
   end
 end
 
 def sanitize_input(input)
+  if input.nil?
+    return nil
+  end
   result = String.new
   input.each_byte do |byte|
     #backspace
@@ -32,23 +39,23 @@ end
 
 def prompt_for_player(client)
   begin
-    RubyMud::Telnet.send client, "Enter your name:"
+    RubyMud::Message.send_to_client client, "server.name_prompt"
     name = receive_input client
     unless name.nil?
       name.chomp!
       player = RubyMud::World.instance.players[name]
       if player.nil?
         player = RubyMud::Feature::Player.new(:client => client, :name => name)
-        RubyMud::Message.send_global "[#{player.name} has joined the game]"
-        RubyMud::Message.send_to_room player.in_room, "#{player.name} has appeared."
+        RubyMud::Message.send_global "player.global.join", player.name
+        RubyMud::Message.send_to_room player.in_room, "player.room.join", player.name
         return player
       elsif player.client.sock.closed?
-        RubyMud::Message.send_global "[#{player.name} has reconnected]"
-        RubyMud::Message.send_to_room player.in_room, "The light has returned to #{player.name}'s eyes."
+        RubyMud::Message.send_global "player.global.reconnect", player.name
+        RubyMud::Message.send_to_room player.in_room, "player.room.reconnect", player.name
         player.client = client
         return player
       else
-        RubyMud::Telnet.send client, "A player by that name is already active."
+        RubyMud::Message.send_to_client client, "server.player_active"
       end
     else
       #reading nothing from the socket indicates that the other end of the socket is closed
@@ -62,36 +69,55 @@ end
 #Create the world
 RubyMud::World.instance.add_room(RubyMud::Feature::Room.new 1)
 
+logger.info "Starting RubyMud server on port 2000"
 server = TCPServer.open 2000
+logger.debug "RubyMud server is up" 
 
+logger.debug "Starting connection thread"
 acceptThread = Thread.start do
   loop do
     Thread.start(server.accept) do |client|
+      addr = client.peeraddr
+      network_id = "[#{addr[2]} #{addr[1]}]"
+      logger.info "#{network_id} Connection accepted"
       client = Net::Telnet.new("Proxy" => client)
+      logger.debug "#{network_id} Telnet socket proxy created"
       player = prompt_for_player client
-      unless player.nil?
-        RubyMud::World.instance.add_player player
-        begin
-          m = receive_input client
-          unless m.nil?
-            m.chomp!
-            unless m.empty?
-              RubyMud::Command.execute player, m
+      begin
+        unless player.nil?
+          logger.debug "#{network_id} Logged in as #{player.name}"
+          RubyMud::World.instance.add_player player
+          logger.debug "#{player.name} added to the world"
+          begin
+            m = receive_input client
+            unless m.nil?
+              m.chomp!
+              logger.debug "#{player.name} sent '#{m}'"
+              unless m.empty?
+                logger.debug "#{player.name} executing '#{m}'"
+                RubyMud::Command.execute player, m
+              end
+            else
+              #reading nothing from the socket indicates the other side has closed it's connection
+              #we can safely disconnect our side of the socket
+              logger.info "#{player.name} has sent no input, disconnecting"
+              player.disconnect
+              RubyMud::Message.send_global "player.global.disconnect", player.name
+              RubyMud::Message.send_to_room player.in_room, "player.room.disconnect", player.name
+              break
             end
-          else
-            #reading nothing from the socket indicates the other side has closed it's connection
-            #we can safely disconnect our side of the socket
-            player.disconnect
-            RubyMud::Message.send_global "[#{player.name} has disconnected]"
-            RubyMud::Message.send_to_room player.in_room, "#{player.name}'s eyes have lost their light."
-            break
-          end
-        end while !client.sock.closed?
+          end while !client.sock.closed?
+          logger.info "#{player.name}'s socket has been closed"
+        end
+      rescue => e
+        logger.error "Error raised: #{e}"
+        player.disconnect
       end
     end
   end
 end
 
+logger.debug "Starting input thread"
 loop {
   m = gets.chomp
   if m == "shutdown"

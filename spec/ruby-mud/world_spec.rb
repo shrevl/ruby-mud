@@ -10,7 +10,7 @@ describe RubyMud::World do
     it "should disconnect all players" do
       RubyMud::World.instance.shutdown
       RubyMud::World.instance.players.each do |p_name, player|
-        player.client.closed?.should equal true
+        player.client.sock.closed?.should equal true
       end
     end
   end

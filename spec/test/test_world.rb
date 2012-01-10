@@ -4,20 +4,28 @@ require 'ruby-mud/feature/player'
 
 module TestWorld
   class TestPlayer < RubyMud::Feature::Player
-    attr :messages, true
     
-    def initialize(opts=[])
-      super(opts)
-      @messages = []
-    end
-    
-    def puts(message)
-      @messages.push message
+    def messages
+      @client.messages
     end
     
     def reset
+      @client = TestClient.new
+    end
+  end
+  
+  class TestClient
+    attr :sock, true
+    attr :messages, true
+    
+    def initialize
+      @sock = TestSocket.new
       @messages = []
-      @client = TestSocket.new
+    end
+    
+    def write(message)
+      #remove the \r\n so that we can simple compare messages for testing
+      @messages << message.chomp.chomp
     end
   end
   
@@ -38,9 +46,9 @@ module TestWorld
     RubyMud::World.instance.add_room(RubyMud::Feature::Room.new 1)
     RubyMud::World.instance.add_room(RubyMud::Feature::Room.new 2)
     
-    RubyMud::World.instance.add_player TestPlayer.new(:name => "Actor", :client => TestSocket.new)
-    RubyMud::World.instance.add_player TestPlayer.new(:name => "InRoom", :client => TestSocket.new)
-    RubyMud::World.instance.add_player TestPlayer.new(:name => "OutOfRoom", :in_room => 2, :client => TestSocket.new)
+    RubyMud::World.instance.add_player TestPlayer.new(:name => "Actor", :client => TestClient.new)
+    RubyMud::World.instance.add_player TestPlayer.new(:name => "InRoom", :client => TestClient.new)
+    RubyMud::World.instance.add_player TestPlayer.new(:name => "OutOfRoom", :in_room => 2, :client => TestClient.new)
   end
   
   def TestWorld.reset_players

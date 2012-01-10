@@ -11,15 +11,9 @@ module RubyMud
         @client = opts[:client]
       end
       
-      def puts(message)
-        unless @client.sock.closed?
-          RubyMud::Telnet.send @client, message
-        end
-      end
-      
       def disconnect
         unless @client.sock.closed?
-          @client.close
+          @client.sock.close
         end
       end
     end  
