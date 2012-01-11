@@ -5,6 +5,10 @@ command:
   unparsable: "'{1}' is not a well formed command."
   invalid: "Command '{1}' not found."
 
+information:
+  player:
+    in_room: "{1} is here."
+
 movement:
   arrive: "{1} has arrived from the {2}."
   invalid: "You cannot move in that direction."

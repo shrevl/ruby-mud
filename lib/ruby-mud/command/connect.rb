@@ -8,8 +8,8 @@ module RubyMud
         removed_player = RubyMud::World.instance.remove_player player
         unless removed_player.nil?
           player.disconnect
-          RubyMud::Message.send_global "player.global.quit", player.name
-          RubyMud::Message.send_to_room player.in_room, "player.room.quit", player.name
+          RubyMud::Message::Keyed.send_global RubyMud::Message::Key.new("player.global.quit", player.name)
+          RubyMud::Message::Keyed.send_to_room player.in_room, RubyMud::Message::Key.new("player.room.quit", player.name)
           true
         else
           false

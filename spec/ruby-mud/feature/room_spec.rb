@@ -22,6 +22,9 @@ describe RubyMud::Feature::Room do
       it "should have no exits" do
         @room.exits.empty?.should == true
       end
+      it "should have no short description" do
+        @room.short_description.nil?.should == true
+      end
     end
     context "with exits specified" do
       before :all do
@@ -31,6 +34,15 @@ describe RubyMud::Feature::Room do
       it_behaves_like "init"
       it "should have its exits set" do
         @room.exits.should equal @exits
+      end
+    end
+    context "with short description specified" do
+      before :all do
+        @room = RubyMud::Feature::Room.new @room_id, {:short_description => "A short description"}
+      end
+      it_behaves_like "init"
+      it "should have its short description set" do
+        @room.short_description.should == "A short description"
       end
     end
   end

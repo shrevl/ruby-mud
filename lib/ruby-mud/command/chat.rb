@@ -1,4 +1,5 @@
 require_relative '../message'
+require 'term/ansicolor'
 
 module RubyMud
   module Command
@@ -8,7 +9,7 @@ module RubyMud
         if(text.empty?)
           return false
         end
-        RubyMud::Message.send_to_room actor.in_room, "chat.say", actor.name, text
+        RubyMud::Message::Keyed.send_to_room actor.in_room, RubyMud::Message::Key.new("chat.say", actor.name, text), Term::ANSIColor.green
         true
       end
     end  

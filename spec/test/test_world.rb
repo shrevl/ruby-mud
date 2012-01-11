@@ -26,7 +26,14 @@ module TestWorld
     
     def write(message)
       #remove the \r\n so that we can simple compare messages for testing
-      @messages << message.chomp.chomp
+      lines = message.split RubyMud::Telnet.newline
+      lines.each do |line|
+        #remove escape sequences
+        if line.start_with? "\e"
+          lines.delete line
+        end
+      end
+      @messages += lines
     end
   end
   
@@ -44,11 +51,14 @@ module TestWorld
   
   def TestWorld.reset
     RubyMud::World.instance.reset
-    RubyMud::World.instance.add_room(RubyMud::Feature::Room.new 1)
-    RubyMud::World.instance.add_room(RubyMud::Feature::Room.new 2)
-    
-    RubyMud::World.instance.rooms[1].exits[:north] = RubyMud::Feature::Exit.new 2
-    RubyMud::World.instance.rooms[2].exits[:south] = RubyMud::Feature::Exit.new 1
+    RubyMud::World.instance.add_room(RubyMud::Feature::Room.new(1, {
+                                                                     :short_description => "Room 1",
+                                                                     :exits => {:north => RubyMud::Feature::Exit.new(2)}
+                                                                   }))
+    RubyMud::World.instance.add_room(RubyMud::Feature::Room.new(2, {
+                                                                     :short_description => "Room 2",
+                                                                     :exits => {:south => RubyMud::Feature::Exit.new(1)}
+                                                                   }))
     
     RubyMud::World.instance.add_player TestPlayer.new(:name => "Actor", :client => TestClient.new)
     RubyMud::World.instance.add_player TestPlayer.new(:name => "InRoom", :client => TestClient.new)

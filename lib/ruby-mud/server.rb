@@ -40,23 +40,23 @@ end
 
 def prompt_for_player(client)
   begin
-    RubyMud::Message.send_to_client client, "server.name_prompt"
+    RubyMud::Message::Keyed.send_to_client client, RubyMud::Message::Key.new("server.name_prompt")
     name = receive_input client
     unless name.nil?
       name.chomp!
       player = RubyMud::World.instance.players[name]
       if player.nil?
         player = RubyMud::Feature::Player.new(:client => client, :name => name)
-        RubyMud::Message.send_global "player.global.join", player.name
-        RubyMud::Message.send_to_room player.in_room, "player.room.join", player.name
+        RubyMud::Message::Keyed.send_global RubyMud::Message::Key.new("player.global.join", player.name)
+        RubyMud::Message::Keyed.send_to_room player.in_room, RubyMud::Message::Key.new("player.room.join", player.name)
         return player
       elsif player.client.sock.closed?
-        RubyMud::Message.send_global "player.global.reconnect", player.name
-        RubyMud::Message.send_to_room player.in_room, "player.room.reconnect", player.name
+        RubyMud::Message::Keyed.send_global RubyMud::Message::Key.new("player.global.reconnect", player.name)
+        RubyMud::Message::Keyed.send_to_room player.in_room, RubyMud::Message::Key.new("player.room.reconnect", player.name)
         player.client = client
         return player
       else
-        RubyMud::Message.send_to_client client, "server.player_active"
+        RubyMud::Message::Keyed.send_to_client client, RubyMud::Message::Key.new("server.player_active")
       end
     else
       #reading nothing from the socket indicates that the other end of the socket is closed
@@ -68,10 +68,14 @@ def prompt_for_player(client)
 end
 
 #Create the world
-RubyMud::World.instance.add_room(RubyMud::Feature::Room.new 1)
-RubyMud::World.instance.add_room(RubyMud::Feature::Room.new 2)
-RubyMud::World.instance.rooms[1].exits[:east] = RubyMud::Feature::Exit.new 2
-RubyMud::World.instance.rooms[2].exits[:west] = RubyMud::Feature::Exit.new 1
+RubyMud::World.instance.add_room(RubyMud::Feature::Room.new(1, {
+                                                                 :short_description => "Room 1",
+                                                                 :exits => {:east => RubyMud::Feature::Exit.new(2)}
+                                                               }))
+RubyMud::World.instance.add_room(RubyMud::Feature::Room.new(2, {
+                                                                 :short_description => "Room 2",
+                                                                 :exits => {:west => RubyMud::Feature::Exit.new(1)}
+                                                               }))
 
 logger.info "Starting RubyMud server on port 2000"
 server = TCPServer.open 2000
@@ -106,15 +110,15 @@ acceptThread = Thread.start do
               #we can safely disconnect our side of the socket
               logger.info "#{player.name} has sent no input, disconnecting"
               player.disconnect
-              RubyMud::Message.send_global "player.global.disconnect", player.name
-              RubyMud::Message.send_to_room player.in_room, "player.room.disconnect", player.name
+              RubyMud::Message::Keyed.send_global RubyMud::Message::Key.new("player.global.disconnect", player.name)
+              RubyMud::Message::Keyed.send_to_room player.in_room, RubyMud::Message::Key.new("player.room.disconnect", player.name)
               break
             end
           end while !client.sock.closed?
           logger.info "#{player.name}'s socket has been closed"
         end
-      rescue => e
-        logger.error "Error raised: #{e}"
+      rescue
+        logger.error $!
         player.disconnect
       end
     end

@@ -8,14 +8,14 @@ module RubyMud
         unless exit.nil?
           from_room_id = actor.in_room
           RubyMud::World.instance.rooms[from_room_id].players.delete actor.name
-          RubyMud::Message.send_to_room from_room_id, "movement.leave", actor.name, direction.to_s
-          RubyMud::Message.send_to_room exit.room_id, "movement.arrive", actor.name, RubyMud::Command::Movement::Direction.reverse(direction).to_s
+          RubyMud::Message::Keyed.send_to_room from_room_id, RubyMud::Message::Key.new("movement.leave", actor.name, direction.to_s)
+          RubyMud::Message::Keyed.send_to_room exit.room_id, RubyMud::Message::Key.new("movement.arrive", actor.name, RubyMud::Command::Movement::Direction.reverse(direction).to_s)
           RubyMud::World.instance.rooms[exit.room_id].players[actor.name] = actor
           actor.in_room = exit.room_id
           true
         else
           #invalid direction, issue message to actor
-          RubyMud::Message.send_to_actor actor, "movement.invalid"
+          RubyMud::Message::Keyed.send_to_actor actor, RubyMud::Message::Key.new("movement.invalid")
           false
         end
       end

@@ -1,12 +1,14 @@
 require_relative 'message'
 require_relative 'command/chat'
 require_relative 'command/connect'
+require_relative 'command/information'
 require_relative 'command/movement'
 
 module RubyMud
   module Command
     @commands = {
                   :east => { :method => Movement.method(:move), :arg => :east },
+                  :look => Information.method(:look),
                   :north => { :method => Movement.method(:move), :arg => :north },
                   :quit => Connect.method(:quit),
                   :say => Chat.method(:say),
@@ -17,7 +19,7 @@ module RubyMud
     def Command.execute(actor, cmd)
       cmds = Command.parse(cmd)
       if cmds.nil?
-        Message.send_to_actor actor, "command.unparsable", cmd
+        Message::Keyed.send_to_actor actor, RubyMud::Message::Key.new("command.unparsable", cmd)
         return false
       end
       c = cmds[0].downcase.intern
@@ -32,7 +34,7 @@ module RubyMud
           command[actor, args]
         end
       else
-        Message.send_to_actor actor, "command.invalid", cmds[0]
+        Message::Keyed.send_to_actor actor, RubyMud::Message::Key.new("command.invalid", cmds[0])
         false
       end
     end
