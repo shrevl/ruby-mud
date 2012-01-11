@@ -5,6 +5,11 @@ command:
   unparsable: "'{1}' is not a well formed command."
   invalid: "Command '{1}' not found."
 
+movement:
+  arrive: "{1} has arrived from the {2}."
+  invalid: "You cannot move in that direction."
+  leave: "{1} has left to the {2}."
+
 player:
   global:
     disconnect: "[{1} has disconnected]"
@@ -16,7 +21,7 @@ player:
     join: "{1} has appeared."
     quit: "{1} has disappeared."
     reconnect: "The light has returned to {1}'s eyes."
-
+    
 server:
   name_prompt: "Enter your name:"
   player_active: "A player by that name is already active."

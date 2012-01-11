@@ -1,6 +1,7 @@
-require 'ruby-mud/world'
+require 'ruby-mud/feature/exit'
 require 'ruby-mud/feature/room'
 require 'ruby-mud/feature/player'
+require 'ruby-mud/world'
 
 module TestWorld
   class TestPlayer < RubyMud::Feature::Player
@@ -45,6 +46,9 @@ module TestWorld
     RubyMud::World.instance.reset
     RubyMud::World.instance.add_room(RubyMud::Feature::Room.new 1)
     RubyMud::World.instance.add_room(RubyMud::Feature::Room.new 2)
+    
+    RubyMud::World.instance.rooms[1].exits[:north] = RubyMud::Feature::Exit.new 2
+    RubyMud::World.instance.rooms[2].exits[:south] = RubyMud::Feature::Exit.new 1
     
     RubyMud::World.instance.add_player TestPlayer.new(:name => "Actor", :client => TestClient.new)
     RubyMud::World.instance.add_player TestPlayer.new(:name => "InRoom", :client => TestClient.new)

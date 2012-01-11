@@ -1,11 +1,14 @@
 module RubyMud
   module Feature
     class Room
-      attr :players
       attr_reader :id
-      def initialize(id)
-        @players = {}
+      attr :players
+      attr :exits
+      
+      def initialize(id, opts={})
         @id = id
+        @players = {}
+        @exits = opts[:exits] || {}
       end
     end
   end

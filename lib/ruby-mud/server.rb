@@ -5,6 +5,7 @@ require 'net/telnet'
 require_relative 'command'
 require_relative 'telnet'
 require_relative 'world'
+require_relative 'feature/exit'
 require_relative 'feature/player'
 require_relative 'feature/room'
 
@@ -68,6 +69,9 @@ end
 
 #Create the world
 RubyMud::World.instance.add_room(RubyMud::Feature::Room.new 1)
+RubyMud::World.instance.add_room(RubyMud::Feature::Room.new 2)
+RubyMud::World.instance.rooms[1].exits[:east] = RubyMud::Feature::Exit.new 2
+RubyMud::World.instance.rooms[2].exits[:west] = RubyMud::Feature::Exit.new 1
 
 logger.info "Starting RubyMud server on port 2000"
 server = TCPServer.open 2000

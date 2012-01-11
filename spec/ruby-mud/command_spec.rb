@@ -13,6 +13,9 @@ describe RubyMud::Command do
     it "should execute 'quit'" do
       RubyMud::Command.execute(@actor, "quit").should equal true
     end
+    it "should execute 'north'" do
+      RubyMud::Command.execute(@actor, "north").should equal true
+    end
     it "should not execute 'invalid command'" do
       RubyMud::Command.execute(@actor, "invalid command").should equal false
     end
