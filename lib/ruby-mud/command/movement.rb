@@ -27,8 +27,20 @@ module RubyMud
                                 :east => :west,
                                 :west => :east
                               }
+                              
+        @direction_short = {
+                             :north => "N",
+                             :south => "S",
+                             :east => "E",
+                             :west => "W"
+                           }
+                           
         def Direction.reverse(direction)
           @reverse_directions[direction]
+        end
+        
+        def Direction.short(direction)
+          @direction_short[direction]
         end
       end
     end

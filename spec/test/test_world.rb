@@ -3,6 +3,8 @@ require 'ruby-mud/feature/room'
 require 'ruby-mud/feature/player'
 require 'ruby-mud/world'
 
+require 'term/ansicolor'
+
 module TestWorld
   class TestPlayer < RubyMud::Feature::Player
     
@@ -25,14 +27,10 @@ module TestWorld
     end
     
     def write(message)
-      #remove the \r\n so that we can simple compare messages for testing
+      #remove ansi coloring so we can ease message verification
+      message = Term::ANSIColor.uncolored message
+      #remove the \r\n so that we can simply compare messages for testing
       lines = message.split RubyMud::Telnet.newline
-      lines.each do |line|
-        #remove escape sequences
-        if line.start_with? "\e"
-          lines.delete line
-        end
-      end
       @messages += lines
     end
   end

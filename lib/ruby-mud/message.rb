@@ -28,12 +28,27 @@ module RubyMud
       end
       
       def << m
+        unless is_escape_sequence?(m)
+          @last_visible_message = @messages.length
+        end
         @messages << m
         self
       end
       
       def build
-        @messages.join RubyMud::Telnet.newline
+        message = String.new
+        @messages.each_with_index do |m, i|
+          message +=  m
+          unless is_escape_sequence?(m) or i == @last_visible_message
+            message += RubyMud::Telnet.newline
+          end
+        end
+        message
+      end
+      
+      private
+      def is_escape_sequence?(message)
+        message.start_with? 27.chr
       end
     end
     
@@ -69,7 +84,7 @@ module RubyMud
       def Keyed.get(message_key)
         message = @messages
         message_key.key.split('.').each do |key|
-          unless message.nil?
+          unless message.nil? 
             message = message[key]
           end
         end
