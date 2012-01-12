@@ -1,6 +1,5 @@
 require 'logger'
 require 'socket'
-require 'net/telnet'
 
 require_relative 'command'
 require_relative 'telnet'
@@ -88,10 +87,11 @@ acceptThread = Thread.start do
       addr = client.peeraddr
       network_id = "[#{addr[2]} #{addr[1]}]"
       logger.info "#{network_id} Connection accepted"
-      client = Net::Telnet.new("Proxy" => client)
+      client = RubyMud::Telnet.new("Proxy" => client)
       logger.debug "#{network_id} Telnet socket proxy created"
-      player = prompt_for_player client
       begin
+        client.negotiateAboutWindowSize
+        player = prompt_for_player client
         unless player.nil?
           logger.debug "#{network_id} Logged in as #{player.name}"
           RubyMud::World.instance.add_player player

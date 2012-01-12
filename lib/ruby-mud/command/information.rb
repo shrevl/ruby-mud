@@ -8,13 +8,18 @@ module RubyMud
       def Information.look(actor, args=[])
         builder = RubyMud::Message::Builder.new
         room = RubyMud::World.instance.rooms[actor.in_room]
-        builder << Term::ANSIColor.blue << room.short_description 
+        builder << Term::ANSIColor.bold << Term::ANSIColor.blue << room.short_description << Term::ANSIColor.dark
         unless room.exits.empty?
           exits = "[ "
-          room.exits.each_key do |direction|
-            RubyMud::Command::Movement::Direction.short direction
+          directions = room.exits.keys
+          directions.each do |direction|
+            exits += RubyMud::Command::Movement::Direction.long direction
+            unless direction.eql? directions.last
+              exits += ", "
+            end
           end
           exits += " ]"
+          builder << Term::ANSIColor.yellow << exits
         end
         builder << Term::ANSIColor.green
         room.players.each do |p_name, player|

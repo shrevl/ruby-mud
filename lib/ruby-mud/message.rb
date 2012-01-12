@@ -3,7 +3,7 @@ require 'yaml'
 module RubyMud
   module Message
     def Message.send_to_client(client, message, *styles)
-      RubyMud::Telnet.send client, message, *styles
+      client.send_message message, *styles
     end
     
     def Message.send_to_actor(actor, message, *styles)

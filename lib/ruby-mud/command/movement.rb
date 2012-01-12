@@ -42,6 +42,10 @@ module RubyMud
         def Direction.short(direction)
           @direction_short[direction]
         end
+        
+        def Direction.long(direction)
+          direction.to_s.capitalize
+        end
       end
     end
   end

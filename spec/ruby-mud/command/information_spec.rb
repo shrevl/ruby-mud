@@ -17,8 +17,11 @@ describe RubyMud::Command::Information do
       it "should send the short description to the actor" do
         @actor.messages[0].should == @room_short_description
       end
+      it "should send a list of available directions to move" do
+        @actor.messages[1].should == "[ North ]"
+      end
       it "should send a list of other players in the room" do
-        @actor.messages[1].should == RubyMud::Message::Keyed.get(RubyMud::Message::Key.new("information.player.in_room", @in_room.name))
+        @actor.messages[2].should == RubyMud::Message::Keyed.get(RubyMud::Message::Key.new("information.player.in_room", @in_room.name))
       end
     end
   end

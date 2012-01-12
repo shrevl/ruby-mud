@@ -1,6 +1,7 @@
 require 'ruby-mud/feature/exit'
 require 'ruby-mud/feature/room'
 require 'ruby-mud/feature/player'
+require 'ruby-mud/telnet'
 require 'ruby-mud/world'
 
 require 'term/ansicolor'
@@ -17,7 +18,7 @@ module TestWorld
     end
   end
   
-  class TestClient
+  class TestClient < RubyMud::Telnet
     attr :sock, true
     attr :messages, true
     
