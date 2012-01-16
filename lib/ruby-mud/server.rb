@@ -2,6 +2,7 @@ require 'logger'
 require 'socket'
 
 require_relative 'command'
+require_relative 'config'
 require_relative 'telnet'
 require_relative 'world'
 require_relative 'feature/exit'
@@ -15,7 +16,7 @@ def receive_input(client)
   begin
     #return output once a newline has been sent
     #timeout after 10 minutes without a message being sent
-    sanitize_input client.waitfor({"String" => "\n", "Timeout" => 600})
+    sanitize_input client.waitfor({"String" => "\n", "Timeout" => RubyMud::Config::Client_Timeout})
   rescue TimeoutError
     nil
   end
@@ -76,8 +77,8 @@ RubyMud::World.instance.add_room(RubyMud::Feature::Room.new(2, {
                                                                  :exits => {:west => RubyMud::Feature::Exit.new(1)}
                                                                }))
 
-logger.info "Starting RubyMud server on port 2000"
-server = TCPServer.open 2000
+logger.info "Starting RubyMud server on port " + RubyMud::Config::Server_Port.to_s
+server = TCPServer.open RubyMud::Config::Server_Port
 logger.debug "RubyMud server is up" 
 
 logger.debug "Starting connection thread"

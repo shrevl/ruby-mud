@@ -25,7 +25,10 @@ player:
     join: "{1} has appeared."
     quit: "{1} has disappeared."
     reconnect: "The light has returned to {1}'s eyes."
-    
+
+room:
+  no_exit: "No Exit"
+  
 server:
   name_prompt: "Enter your name:"
   player_active: "A player by that name is already active."

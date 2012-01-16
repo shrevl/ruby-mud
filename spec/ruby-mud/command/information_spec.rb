@@ -10,9 +10,10 @@ describe RubyMud::Command::Information do
   end
   describe "#look" do
     context "with no arguments" do
-      before :each do
+      before :all do
         TestWorld::reset_players
         RubyMud::Command::Information.look @actor
+        puts @actor.messages
       end
       it "should send the short description to the actor" do
         @actor.messages[0].should == @room_short_description

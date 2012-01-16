@@ -1,24 +1,26 @@
 require 'yaml'
+require_relative 'hash'
+require_relative 'style'
 
 module RubyMud
   module Message
-    def Message.send_to_client(client, message, *styles)
-      client.send_message message, *styles
+    def Message.send_to_client(client, message, style_key=RubyMud::Style::Default_Key)
+      client.send_message message, RubyMud::Style.get(style_key)
     end
     
-    def Message.send_to_actor(actor, message, *styles)
-      Message.send_to_client(actor.client, message, *styles)
+    def Message.send_to_actor(actor, message, style_key=RubyMud::Style::Default_Key)
+      Message.send_to_client(actor.client, message, style_key)
     end
     
-    def Message.send_to_room(room_id, message, *styles)
+    def Message.send_to_room(room_id, message, style_key=RubyMud::Style::Default_Key)
       RubyMud::World.instance.rooms[room_id].players.each do |p_name, player|
-        Message.send_to_actor player, message, *styles
+        Message.send_to_actor player, message, style_key
       end
     end
     
-    def Message.send_global(message, *styles)
+    def Message.send_global(message, style_key=RubyMud::Style::Default_Key)
       RubyMud::World.instance.players.each do |p_name, player|
-        Message.send_to_actor player, message, *styles
+        Message.send_to_actor player, message, style_key
       end
     end
     
@@ -28,11 +30,19 @@ module RubyMud
       end
       
       def << m
-        unless is_escape_sequence?(m)
-          @last_visible_message = @messages.length
+        if(m.is_a? Array or m.is_a? Builder)
+          m.each {|piece| self << piece}
+        else
+          unless is_escape_sequence?(m)
+            @last_visible_message = @messages.length
+          end
+          @messages << m
         end
-        @messages << m
         self
+      end
+      
+      def each
+        @messages.each {|m| yield m}
       end
       
       def build
@@ -65,29 +75,24 @@ module RubyMud
     module Keyed
       @messages = YAML.load_file(File.expand_path "../../../config/messages.yaml", __FILE__)
     
-      def Keyed.send_to_client(client, message_key, *styles)
-        Message.send_to_client client, Keyed.get(message_key), *styles
+      def Keyed.send_to_client(client, message_key)
+        Message.send_to_client client, Keyed.get(message_key), message_key.key
       end
       
-      def Keyed.send_to_actor(actor, message_key, *styles)
-        Message.send_to_actor actor, Keyed.get(message_key), *styles
+      def Keyed.send_to_actor(actor, message_key)
+        Message.send_to_actor actor, Keyed.get(message_key), message_key.key
       end
       
-      def Keyed.send_to_room(room_id, message_key, *styles)
-        Message.send_to_room room_id, Keyed.get(message_key), *styles
+      def Keyed.send_to_room(room_id, message_key)
+        Message.send_to_room room_id, Keyed.get(message_key), message_key.key
       end
       
-      def Keyed.send_global(message_key, *styles)
-        Message.send_global Keyed.get(message_key), *styles
+      def Keyed.send_global(message_key)
+        Message.send_global Keyed.get(message_key), message_key.key
       end
       
       def Keyed.get(message_key)
-        message = @messages
-        message_key.key.split('.').each do |key|
-          unless message.nil? 
-            message = message[key]
-          end
-        end
+        message = @messages.get_multikey message_key.key
         assign_arguments message, message_key.args
       end
       

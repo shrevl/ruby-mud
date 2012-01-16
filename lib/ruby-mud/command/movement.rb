@@ -1,4 +1,5 @@
 require_relative '../message'
+require_relative 'information'
 
 module RubyMud
   module Command
@@ -12,6 +13,9 @@ module RubyMud
           RubyMud::Message::Keyed.send_to_room exit.room_id, RubyMud::Message::Key.new("movement.arrive", actor.name, RubyMud::Command::Movement::Direction.reverse(direction).to_s)
           RubyMud::World.instance.rooms[exit.room_id].players[actor.name] = actor
           actor.in_room = exit.room_id
+          if actor.auto_look?
+            RubyMud::Command::Information.look(actor)
+          end
           true
         else
           #invalid direction, issue message to actor

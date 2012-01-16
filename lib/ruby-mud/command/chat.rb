@@ -9,7 +9,7 @@ module RubyMud
         if(text.empty?)
           return false
         end
-        RubyMud::Message::Keyed.send_to_room actor.in_room, RubyMud::Message::Key.new("chat.say", actor.name, text), Term::ANSIColor.green
+        RubyMud::Message::Keyed.send_to_room actor.in_room, RubyMud::Message::Key.new("chat.say", actor.name, text)
         true
       end
     end  
