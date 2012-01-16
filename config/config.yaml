@@ -1,0 +1,5 @@
+client:
+  timeout: 600
+
+server:
+  port: 5555

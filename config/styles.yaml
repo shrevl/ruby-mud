@@ -1,0 +1,8 @@
+default: green
+
+chat:
+  say: green
+
+room:
+  exits: yellow
+  short_description: [bold, blue]
