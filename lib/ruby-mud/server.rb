@@ -1,21 +1,21 @@
-require 'logger'
 require 'socket'
 
 require_relative 'command'
 require_relative 'config'
+require_relative 'heart'
+require_relative 'logging'
 require_relative 'telnet'
 require_relative 'world'
 require_relative 'feature/exit'
 require_relative 'feature/player'
 require_relative 'feature/room'
 
-logger = Logger.new STDOUT
-logger.level = Logger::DEBUG
+
+logger = RubyMud::Logging::Server
 
 def receive_input(client)
   begin
     #return output once a newline has been sent
-    #timeout after 10 minutes without a message being sent
     sanitize_input client.waitfor({"String" => "\n", "Timeout" => RubyMud::Config::Client_Timeout})
   rescue TimeoutError
     nil
@@ -77,7 +77,7 @@ RubyMud::World.instance.add_room(RubyMud::Feature::Room.new(2, {
                                                                  :exits => {:west => RubyMud::Feature::Exit.new(1)}
                                                                }))
 
-logger.info "Starting RubyMud server on port " + RubyMud::Config::Server_Port.to_s
+logger.info "Starting RubyMud server on port #{RubyMud::Config::Server_Port}"
 server = TCPServer.open RubyMud::Config::Server_Port
 logger.debug "RubyMud server is up" 
 
@@ -126,11 +126,21 @@ acceptThread = Thread.start do
   end
 end
 
+logger.info "Starting Heartbeat thread"
+heatbeatThread = Thread.start do
+  logger.info "Heartbeat pulse set to #{RubyMud::Config::Server_Heartbeat} seconds"
+  loop do
+    RubyMud::Heart.pulse
+    sleep(RubyMud::Config::Server_Heartbeat)
+  end
+end
+
 logger.debug "Starting input thread"
 loop {
   m = gets.chomp
   if m == "shutdown"
     Thread.kill acceptThread
+    Thread.kill heatbeatThread
     RubyMud::World.instance.shutdown
     server.close
     break

@@ -3,14 +3,18 @@ module RubyMud
     class Room
       attr :id
       attr :short_description, true
-      attr :players
       attr :exits
+      
+      attr :players
+      attr :mobiles
       
       def initialize(id, opts={})
         @id = id
         @short_description = opts[:short_description]
-        @players = {}
         @exits = opts[:exits] || {}
+        
+        @players = {}
+        @mobiles = {}
       end
     end
   end

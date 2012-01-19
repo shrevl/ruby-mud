@@ -5,8 +5,10 @@ module RubyMud
   class World
     include Singleton
 
-    attr_reader :players
-    attr_reader :rooms
+    attr :players
+    attr :rooms
+    attr :mobiles
+    
     def initialize
       @players = {}
       @rooms = {}

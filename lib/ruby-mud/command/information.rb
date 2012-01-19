@@ -9,13 +9,18 @@ module RubyMud
       def Information.look(actor, args=[])
         builder = RubyMud::Message::Builder.new
         room = RubyMud::World.instance.rooms[actor.in_room]
-        builder << RubyMud::Style.get("room.short_description") << room.short_description << RubyMud::Style::Clear
+        builder << short_description(room)
         builder << exits_in_room(room)
         builder << other_players_in_room(room, actor)
         RubyMud::Message.send_to_actor actor, builder.build
       end
       
       private
+      def Information.short_description(room)
+        builder = RubyMud::Message::Builder.new
+        builder << RubyMud::Style.get("room.short_description") << room.short_description << RubyMud::Style::Clear
+      end
+      
       def Information.exits_in_room(room)
         builder = RubyMud::Message::Builder.new
         exits = "[ "

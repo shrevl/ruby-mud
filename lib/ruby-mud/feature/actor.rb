@@ -1,3 +1,5 @@
+require_relative '../config'
+
 module RubyMud
   module Feature
     class Actor
@@ -8,7 +10,7 @@ module RubyMud
       def initialize(opts={})
         @name = opts[:name]
         @id = opts[:id]
-        @in_room = opts[:in_room] || 1
+        @in_room = opts[:in_room] || RubyMud::Config::World_Starting_Room
       end
     end  
   end

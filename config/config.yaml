@@ -2,4 +2,8 @@ client:
   timeout: 600
 
 server:
+  heartbeat: 10
   port: 5555
+  
+world:
+  starting_room: 1

@@ -2,17 +2,23 @@ require 'yaml'
 require 'term/ansicolor'
 
 require_relative 'hash'
+require_relative 'logging'
 
 module RubyMud
   module Style
-    @styles = YAML.load_file(File.expand_path "../../../config/styles.yaml", __FILE__)
+    begin
+      @styles = YAML.load_file(File.expand_path "../../../config/styles.yaml", __FILE__)
+    rescue
+      RubyMud::Logging::Server.warn "Failed to load config/styles.yaml, text styling will be defaulted"
+      @styles = {}
+    end
     Default_Key = "default"
     Clear = Term::ANSIColor.clear
     
     def Style.get(style_key)
       style = @styles.get_multikey(style_key)
       if(style.nil?)
-        style = @styles.get_multikey(Default_Key)
+        style = Default_Style
       end
       style
     end
@@ -36,5 +42,6 @@ module RubyMud
       end  
     end
     self.transform(@styles)
+    Default_Style = @styles.get_multikey(Default_Key) || [ Term::ANSIColor.green ]
   end
 end
