@@ -1,8 +1,8 @@
-require 'ruby-mud/command/movement'
+require 'ruby-mud/action/movement'
 
 require_relative '../../test/test_world'
 
-describe RubyMud::Command::Movement do
+describe RubyMud::Action::Movement do
   before :each do
     TestWorld::reset
     @actor = RubyMud::World.instance.players["Actor"]
@@ -12,7 +12,7 @@ describe RubyMud::Command::Movement do
   describe "#move" do
     context "with a valid direction" do
       before :each do
-        RubyMud::Command::Movement.move(@actor, :north).should == true
+        RubyMud::Action::Movement.move(RubyMud::World.instance, @actor, :north).should == true
       end
       it "should move the actor to the room in that direction" do
         RubyMud::World.instance.rooms[1].players[@actor.name].nil?.should == true
@@ -28,7 +28,7 @@ describe RubyMud::Command::Movement do
     end
     context "with an invalid direction" do
       before :each do
-        RubyMud::Command::Movement.move(@actor, :east).should == false
+        RubyMud::Action::Movement.move(RubyMud::World.instance, @actor, :east).should == false
       end
       it "should not move the actor" do
         RubyMud::World.instance.rooms[1].players[@actor.name].nil?.should == false
@@ -41,26 +41,6 @@ describe RubyMud::Command::Movement do
       it "should send the actor a message that the exit was invalid" do
         @actor.messages[0].should == "You cannot move in that direction."
       end
-    end
-  end
-end
-
-describe RubyMud::Command::Movement::Direction do
-  describe "#reverse" do
-    it "should reverse 'north' to 'south'" do
-      RubyMud::Command::Movement::Direction.reverse(:north).should == :south
-    end
-    it "should reverse 'south' to 'north'" do
-      RubyMud::Command::Movement::Direction.reverse(:south).should == :north
-    end
-    it "should reverse 'east' to 'west'" do
-      RubyMud::Command::Movement::Direction.reverse(:east).should == :west
-    end
-    it "should reverse 'west' to 'east'" do
-      RubyMud::Command::Movement::Direction.reverse(:west).should == :east
-    end
-    it "should return nil on an invalid direction" do
-      RubyMud::Command::Movement::Direction.reverse(:invalid).nil?.should == true
     end
   end
 end

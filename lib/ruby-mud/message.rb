@@ -9,6 +9,9 @@ module RubyMud
     end
     
     def Message.send_to_actor(actor, message, style_key=RubyMud::Style::Default_Key)
+      if message.is_a? RubyMud::Message::Key
+        message = Keyed.get(message)
+      end
       Message.send_to_client(actor.client, message, style_key)
     end
     

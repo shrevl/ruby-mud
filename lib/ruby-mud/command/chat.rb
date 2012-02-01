@@ -1,5 +1,4 @@
 require_relative '../message'
-require 'term/ansicolor'
 
 module RubyMud
   module Command
