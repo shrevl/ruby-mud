@@ -13,6 +13,13 @@ require_relative 'feature/room'
 
 logger = RubyMud::Logging::Server
 
+#is_binary_data? was removed during 1.9.3, but appears to be required by the Aptana debugger
+class String
+  def is_binary_data?
+    ( self.count( "^ -~", "^\r\n" ).fdiv(self.size) > 0.3 || self.index( "\x00" ) ) unless empty?
+  end
+end
+
 def receive_input(client)
   begin
     #return output once a newline has been sent
@@ -81,6 +88,9 @@ logger.info "Starting RubyMud server on port #{RubyMud::Config::Server_Port}"
 server = TCPServer.open RubyMud::Config::Server_Port
 logger.debug "RubyMud server is up" 
 
+logger.debug "Starting director"
+RubyMud::Director.instance.direct
+
 logger.debug "Starting connection thread"
 acceptThread = Thread.start do
   loop do
@@ -142,6 +152,7 @@ loop {
     Thread.kill acceptThread
     Thread.kill heatbeatThread
     RubyMud::World.instance.shutdown
+    RubyMud::Director.instance.finish
     server.close
     break
   elsif m == "thread"

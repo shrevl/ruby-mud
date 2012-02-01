@@ -1,6 +1,6 @@
 require_relative '../message'
 require_relative '../style'
-require_relative 'movement'
+require_relative '../feature/direction'
 
 
 module RubyMud
@@ -27,7 +27,7 @@ module RubyMud
         unless room.exits.empty?
           directions = room.exits.keys
           directions.each do |direction|
-            exits += RubyMud::Command::Movement::Direction.long direction
+            exits += RubyMud::Feature::Direction.long direction
             unless direction.eql? directions.last
               exits += ", "
             end
