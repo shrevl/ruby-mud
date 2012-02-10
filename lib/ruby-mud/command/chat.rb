@@ -3,12 +3,12 @@ require_relative '../message'
 module RubyMud
   module Command
     module Chat
-      def Chat.say(actor, words=[])
+      def Chat.say(world, actor, words=[])
         text = words.join(" ").strip
         if(text.empty?)
           return false
         end
-        RubyMud::Message::Keyed.send_to_room actor.in_room, RubyMud::Message::Key.new("chat.say", actor.name, text)
+        world.rooms[actor.in_room].message RubyMud::Message::Key.new("chat.say", actor.name, text)
         true
       end
     end  

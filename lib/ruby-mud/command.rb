@@ -19,7 +19,7 @@ module RubyMud
     def Command.execute(actor, cmd)
       cmds = Command.parse(cmd)
       if cmds.nil?
-        Message::Keyed.send_to_actor actor, RubyMud::Message::Key.new("command.unparsable", cmd)
+        actor.message RubyMud::Message::Key.new("command.unparsable", cmd)
         return false
       end
       c = cmds[0].downcase.intern
@@ -29,12 +29,12 @@ module RubyMud
         if command.is_a? Hash
           meth = command[:method]
           arg = command[:arg]
-          meth[actor, arg, args]
+          RubyMud::Director.instance.queue_command lambda { |world| meth[world, actor, arg, args] }
         else
-          command[actor, args]
+          RubyMud::Director.instance.queue_command lambda { |world| command[world, actor, args] }
         end
       else
-        Message::Keyed.send_to_actor actor, RubyMud::Message::Key.new("command.invalid", cmds[0])
+        actor.message RubyMud::Message::Key.new("command.invalid", cmds[0])
         false
       end
     end

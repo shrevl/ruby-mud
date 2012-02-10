@@ -15,18 +15,6 @@ module RubyMud
       Message.send_to_client(actor.client, message, style_key)
     end
     
-    def Message.send_to_room(room_id, message, style_key=RubyMud::Style::Default_Key)
-      RubyMud::World.instance.rooms[room_id].players.each do |p_name, player|
-        Message.send_to_actor player, message, style_key
-      end
-    end
-    
-    def Message.send_global(message, style_key=RubyMud::Style::Default_Key)
-      RubyMud::World.instance.players.each do |p_name, player|
-        Message.send_to_actor player, message, style_key
-      end
-    end
-    
     class Builder
       def initialize
         @messages = []
@@ -80,18 +68,6 @@ module RubyMud
     
       def Keyed.send_to_client(client, message_key)
         Message.send_to_client client, Keyed.get(message_key), message_key.key
-      end
-      
-      def Keyed.send_to_actor(actor, message_key)
-        Message.send_to_actor actor, Keyed.get(message_key), message_key.key
-      end
-      
-      def Keyed.send_to_room(room_id, message_key)
-        Message.send_to_room room_id, Keyed.get(message_key), message_key.key
-      end
-      
-      def Keyed.send_global(message_key)
-        Message.send_global Keyed.get(message_key), message_key.key
       end
       
       def Keyed.get(message_key)

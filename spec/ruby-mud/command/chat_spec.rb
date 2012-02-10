@@ -4,9 +4,10 @@ require_relative '../../test/test_world'
 describe RubyMud::Command::Chat do
   before :all do
     TestWorld.reset
-    @actor = RubyMud::World.instance.players["Actor"]
-    @in_room = RubyMud::World.instance.players["InRoom"]
-    @out_room = RubyMud::World.instance.players["OutOfRoom"]
+    @world = RubyMud::World.instance
+    @actor = @world.players["Actor"]
+    @in_room = @world.players["InRoom"]
+    @out_room = @world.players["OutOfRoom"]
   end
   describe "#say" do
     context "with invalid input" do
@@ -14,21 +15,21 @@ describe RubyMud::Command::Chat do
         TestWorld.reset_players
       end
       it "should not run without words" do
-        RubyMud::Command::Chat.say(@actor).should equal false
+        RubyMud::Command::Chat.say(@world, @actor).should equal false
       end
       it "should not run with empty words" do
-        RubyMud::Command::Chat.say(@actor, []).should equal false
+        RubyMud::Command::Chat.say(@world, @actor, []).should equal false
       end
       it "should not run with words that equate to nothing" do
-        RubyMud::Command::Chat.say(@actor, [""]).should equal false
-        RubyMud::Command::Chat.say(@actor, [""," "]).should equal false
+        RubyMud::Command::Chat.say(@world, @actor, [""]).should equal false
+        RubyMud::Command::Chat.say(@world, @actor, [""," "]).should equal false
       end
       it "should not send a message to any actors when unsuccessful" do
-        RubyMud::Command::Chat.say(@actor)
-        RubyMud::Command::Chat.say(@actor, [])
-        RubyMud::Command::Chat.say(@actor, [""])
-        RubyMud::Command::Chat.say(@actor, [""," "])
-        RubyMud::World.instance.players.each do |p_name, player|
+        RubyMud::Command::Chat.say(@world, @actor)
+        RubyMud::Command::Chat.say(@world, @actor, [])
+        RubyMud::Command::Chat.say(@world, @actor, [""])
+        RubyMud::Command::Chat.say(@world, @actor, [""," "])
+        @world.players.each do |p_name, player|
           player.messages.empty?.should equal true
         end
       end
@@ -36,7 +37,7 @@ describe RubyMud::Command::Chat do
     context "with a single word" do
       before :all do
         TestWorld.reset_players
-        @run = RubyMud::Command::Chat.say(@actor, ["word"])
+        @run = RubyMud::Command::Chat.say(@world, @actor, ["word"])
       end
       it "should run" do
         @run.should equal true
@@ -54,7 +55,7 @@ describe RubyMud::Command::Chat do
     context "with multiple words" do
       before :all do
         TestWorld.reset_players
-        @run = RubyMud::Command::Chat.say(@actor, ["multiple", "words should be", "valid"])
+        @run = RubyMud::Command::Chat.say(@world, @actor, ["multiple", "words should be", "valid"])
       end
       it "should run" do
         @run.should equal true

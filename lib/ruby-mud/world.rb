@@ -3,8 +3,6 @@ require 'thread'
 
 module RubyMud
   class World
-    include Singleton
-
     attr :players
     attr :rooms
     attr :mobiles
@@ -47,6 +45,12 @@ module RubyMud
         true
       else
         false
+      end
+    end
+    
+    def message(message, style_key=RubyMud::Style::Default_Key)
+      @players.each do |p_name, player|
+        player.message message, style_key
       end
     end
   end

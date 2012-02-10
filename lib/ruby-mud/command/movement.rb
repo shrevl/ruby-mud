@@ -1,11 +1,10 @@
-require_relative '../director'
-require_relative '../directive/movement'
+require_relative '../action/movement'
 
 module RubyMud
   module Command
     module Movement
-      def Movement.move(actor, direction, args=[])
-        RubyMud::Director.instance.queue_directive RubyMud::Directive::Movement.move(actor, direction)
+      def Movement.move(world, actor, direction, args=[])
+        RubyMud::Action::Movement.move(world, actor, direction)
         true
       end
     end

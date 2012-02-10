@@ -1,5 +1,5 @@
 require_relative '../message'
-require_relative '../command/information'
+require_relative '../action/information'
 
 module RubyMud
   module Action
@@ -14,7 +14,7 @@ module RubyMud
           world.rooms[exit.room_id].players[actor.name] = actor
           actor.in_room = exit.room_id
           if actor.auto_look?
-            RubyMud::Command::Information.look(actor)
+            RubyMud::Action::Information.look world, actor
           end
             true
         else

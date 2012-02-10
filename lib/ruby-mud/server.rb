@@ -2,6 +2,7 @@ require 'socket'
 
 require_relative 'command'
 require_relative 'config'
+require_relative 'director'
 require_relative 'heart'
 require_relative 'logging'
 require_relative 'telnet'
@@ -45,21 +46,21 @@ def sanitize_input(input)
   result
 end
 
-def prompt_for_player(client)
+def prompt_for_player(client, world)
   begin
     RubyMud::Message::Keyed.send_to_client client, RubyMud::Message::Key.new("server.name_prompt")
     name = receive_input client
     unless name.nil?
       name.chomp!
-      player = RubyMud::World.instance.players[name]
+      player = world.players[name]
       if player.nil?
         player = RubyMud::Feature::Player.new(:client => client, :name => name)
-        RubyMud::Message::Keyed.send_global RubyMud::Message::Key.new("player.global.join", player.name)
-        RubyMud::Message::Keyed.send_to_room player.in_room, RubyMud::Message::Key.new("player.room.join", player.name)
+        world.message RubyMud::Message::Key.new("player.global.join", player.name)
+        world.rooms[player.in_room].message RubyMud::Message::Key.new("player.room.join", player.name)
         return player
       elsif player.client.sock.closed?
-        RubyMud::Message::Keyed.send_global RubyMud::Message::Key.new("player.global.reconnect", player.name)
-        RubyMud::Message::Keyed.send_to_room player.in_room, RubyMud::Message::Key.new("player.room.reconnect", player.name)
+        world.message RubyMud::Message::Key.new("player.global.reconnect", player.name)
+        world.rooms[player.in_room].message RubyMud::Message::Key.new("player.room.reconnect", player.name)
         player.client = client
         return player
       else
@@ -75,11 +76,12 @@ def prompt_for_player(client)
 end
 
 #Create the world
-RubyMud::World.instance.add_room(RubyMud::Feature::Room.new(1, {
+world = RubyMud::World.new
+world.add_room(RubyMud::Feature::Room.new(1, {
                                                                  :short_description => "Room 1",
                                                                  :exits => {:east => RubyMud::Feature::Exit.new(2)}
                                                                }))
-RubyMud::World.instance.add_room(RubyMud::Feature::Room.new(2, {
+world.add_room(RubyMud::Feature::Room.new(2, {
                                                                  :short_description => "Room 2",
                                                                  :exits => {:west => RubyMud::Feature::Exit.new(1)}
                                                                }))
@@ -102,10 +104,10 @@ acceptThread = Thread.start do
       logger.debug "#{network_id} Telnet socket proxy created"
       begin
         client.negotiateAboutWindowSize
-        player = prompt_for_player client
+        player = prompt_for_player client, world
         unless player.nil?
           logger.debug "#{network_id} Logged in as #{player.name}"
-          RubyMud::World.instance.add_player player
+          world.add_player player
           logger.debug "#{player.name} added to the world"
           begin
             m = receive_input client
@@ -121,8 +123,8 @@ acceptThread = Thread.start do
               #we can safely disconnect our side of the socket
               logger.info "#{player.name} has sent no input, disconnecting"
               player.disconnect
-              RubyMud::Message::Keyed.send_global RubyMud::Message::Key.new("player.global.disconnect", player.name)
-              RubyMud::Message::Keyed.send_to_room player.in_room, RubyMud::Message::Key.new("player.room.disconnect", player.name)
+              world.message RubyMud::Message::Key.new("player.global.disconnect", player.name)
+              world.rooms[player.in_room].message RubyMud::Message::Key.new("player.room.disconnect", player.name)
               break
             end
           end while !client.sock.closed?
@@ -151,7 +153,7 @@ loop {
   if m == "shutdown"
     Thread.kill acceptThread
     Thread.kill heatbeatThread
-    RubyMud::World.instance.shutdown
+    world.shutdown
     RubyMud::Director.instance.finish
     server.close
     break

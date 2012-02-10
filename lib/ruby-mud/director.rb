@@ -9,15 +9,15 @@ module RubyMud
       @queue = Queue.new
     end
     
-    def queue_directive(directive)
-      @queue.push directive
+    def queue_command(command)
+      @queue.push command
     end
     
     def direct()
       @thread = Thread.start do
         loop do 
-          directive = @queue.pop
-          directive.call RubyMud::World.instance
+          command = @queue.pop
+          command.call RubyMud::World.instance
         end
       end
     end
